@@ -443,12 +443,6 @@ func makeBody(value reflect.Value, params fieldParameters) (e encoder, err error
 	case reflect.Struct:
 		t := v.Type()
 
-		// for i := 0; i < t.NumField(); i++ {
-		// 	if t.Field(i).PkgPath != "" {
-		// 		return nil, StructuralError{"struct contains unexported fields"}
-		// 	}
-		// }
-
 		startingField := 0
 
 		n := t.NumField()
@@ -488,7 +482,13 @@ func makeBody(value reflect.Value, params fieldParameters) (e encoder, err error
 					continue
 				}
 
-				mj, err := makeField(vf, parseFieldParameters(tf.Tag.Get("asn1")))
+				params := parseFieldParameters(tf.Tag.Get("asn1"))
+				if params.ignore {
+					// Ignore fields marked with `asn1:"-"`
+					continue
+				}
+
+				mj, err := makeField(vf, params)
 				m = append(m, mj)
 				j++
 				if err != nil {

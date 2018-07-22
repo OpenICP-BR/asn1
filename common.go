@@ -72,6 +72,7 @@ type tagAndLength struct {
 
 // fieldParameters is the parsed representation of tag string from a structure field.
 type fieldParameters struct {
+	ignore       bool   // true iff the field is marked with `asn1:"-"`
 	optional     bool   // true iff the field is OPTIONAL
 	explicit     bool   // true iff an EXPLICIT tag is in use.
 	application  bool   // true iff an APPLICATION tag is in use.
@@ -92,6 +93,8 @@ type fieldParameters struct {
 func parseFieldParameters(str string) (ret fieldParameters) {
 	for _, part := range strings.Split(str, ",") {
 		switch {
+		case part == "-":
+			ret.ignore = true
 		case part == "optional":
 			ret.optional = true
 		case part == "explicit":

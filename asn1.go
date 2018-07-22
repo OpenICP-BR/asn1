@@ -904,10 +904,17 @@ func parseField(v reflect.Value, bytes []byte, initOffset int, params fieldParam
 				// Ignore unexported fields
 				continue
 			}
+
+			params := parseFieldParameters(field.Tag.Get("asn1"))
+			if params.ignore {
+				// Ignore fields marked with `asn1:"-"`
+				continue
+			}
+
 			if i == 0 && field.Type == rawContentsType {
 				continue
 			}
-			innerOffset, err = parseField(val.Field(i), innerBytes, innerOffset, parseFieldParameters(field.Tag.Get("asn1")))
+			innerOffset, err = parseField(val.Field(i), innerBytes, innerOffset, params)
 			if err != nil {
 				return
 			}
