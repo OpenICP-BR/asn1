@@ -455,7 +455,8 @@ type TestContextSpecificTags struct {
 
 type TestContextSpecificTags2 struct {
 	A int `asn1:"explicit,tag:1"`
-	B int
+	b int
+	C int
 }
 
 type TestContextSpecificTags3 struct {
@@ -492,7 +493,7 @@ var unmarshalTestData = []struct {
 	{[]byte{0x16, 0x04, 't', 'e', 's', 't'}, &RawValue{0, 22, false, []byte("test"), []byte("\x16\x04test")}},
 	{[]byte{0x04, 0x04, 1, 2, 3, 4}, &RawValue{0, 4, false, []byte{1, 2, 3, 4}, []byte{4, 4, 1, 2, 3, 4}}},
 	{[]byte{0x30, 0x03, 0x81, 0x01, 0x01}, &TestContextSpecificTags{1}},
-	{[]byte{0x30, 0x08, 0xa1, 0x03, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02}, &TestContextSpecificTags2{1, 2}},
+	{[]byte{0x30, 0x08, 0xa1, 0x03, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02}, &TestContextSpecificTags2{1, 0, 2}},
 	{[]byte{0x30, 0x03, 0x81, 0x01, '@'}, &TestContextSpecificTags3{"@"}},
 	{[]byte{0x01, 0x01, 0x00}, newBool(false)},
 	{[]byte{0x01, 0x01, 0xff}, newBool(true)},
@@ -981,35 +982,6 @@ func TestMarshalNilValue(t *testing.T) {
 		if _, err := Marshal(test); err == nil {
 			t.Fatalf("#%d: successfully marshaled nil value", i)
 		}
-	}
-}
-
-type unexported struct {
-	X int
-	y int
-}
-
-type exported struct {
-	X int
-	Y int
-}
-
-func TestUnexportedStructField(t *testing.T) {
-	want := StructuralError{"struct contains unexported fields"}
-
-	_, err := Marshal(unexported{X: 5, y: 1})
-	if err != want {
-		t.Errorf("got %v, want %v", err, want)
-	}
-
-	bs, err := Marshal(exported{X: 5, Y: 1})
-	if err != nil {
-		t.Fatal(err)
-	}
-	var u unexported
-	_, err = Unmarshal(bs, &u)
-	if err != want {
-		t.Errorf("got %v, want %v", err, want)
 	}
 }
 

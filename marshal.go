@@ -443,11 +443,11 @@ func makeBody(value reflect.Value, params fieldParameters) (e encoder, err error
 	case reflect.Struct:
 		t := v.Type()
 
-		for i := 0; i < t.NumField(); i++ {
-			if t.Field(i).PkgPath != "" {
-				return nil, StructuralError{"struct contains unexported fields"}
-			}
-		}
+		// for i := 0; i < t.NumField(); i++ {
+		// 	if t.Field(i).PkgPath != "" {
+		// 		return nil, StructuralError{"struct contains unexported fields"}
+		// 	}
+		// }
 
 		startingField := 0
 
@@ -478,9 +478,19 @@ func makeBody(value reflect.Value, params fieldParameters) (e encoder, err error
 		case 1:
 			return makeField(v.Field(startingField), parseFieldParameters(t.Field(startingField).Tag.Get("asn1")))
 		default:
-			m := make([]encoder, n1)
+			m := make([]encoder, 0)
+			j := 0
 			for i := 0; i < n1; i++ {
-				m[i], err = makeField(v.Field(i+startingField), parseFieldParameters(t.Field(i+startingField).Tag.Get("asn1")))
+				vf := v.Field(i + startingField)
+				tf := t.Field(i + startingField)
+				if tf.PkgPath != "" {
+					// Ignore unexported fields
+					continue
+				}
+
+				mj, err := makeField(vf, parseFieldParameters(tf.Tag.Get("asn1")))
+				m = append(m, mj)
+				j++
 				if err != nil {
 					return nil, err
 				}
