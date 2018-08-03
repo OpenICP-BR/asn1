@@ -253,3 +253,28 @@ func BenchmarkMarshal(b *testing.B) {
 		}
 	}
 }
+
+type marshalBeforable struct {
+	A int
+}
+
+func (d *marshalBeforable) BeforeASN1Marshalling() error {
+	d.A = 42
+	return nil
+}
+
+func TestBeforable(t *testing.T) {
+	d1 := marshalBeforable{}
+	d2 := marshalBeforable{}
+	ans, err := Marshal(d1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = Unmarshal(ans, &d2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if d2.A != 42 {
+		t.Errorf("d2.A should be equal to 42 instead %d", d2.A)
+	}
+}
