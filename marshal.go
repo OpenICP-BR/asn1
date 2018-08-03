@@ -18,7 +18,7 @@ var (
 	byteFFEncoder encoder = byteEncoder(0xff)
 )
 
-type beforable interface {
+type BeforeASN1MarshallingI interface {
 	BeforeASN1Marshalling() error
 }
 
@@ -547,6 +547,14 @@ func makeField(v reflect.Value, params fieldParameters) (e encoder, err error) {
 	if !v.IsValid() {
 		return nil, fmt.Errorf("asn1: cannot marshal nil value")
 	}
+	// Check for BeforeASN1Marshalling
+	if m, ok := v.Interface().(BeforeASN1MarshallingI); ok {
+		err := m.BeforeASN1Marshalling()
+		if err != nil {
+			return nil, fmt.Errorf("asn1: BeforeASN1Marshalling: %s", err.Error())
+		}
+	}
+
 	// If the field is an interface{} then recurse into it.
 	if v.Kind() == reflect.Interface && v.Type().NumMethod() == 0 {
 		return makeField(v.Elem(), params)
@@ -588,6 +596,13 @@ func makeField(v reflect.Value, params fieldParameters) (e encoder, err error) {
 		return t, nil
 	}
 
+	for v.Kind() == reflect.Ptr && v.Elem().Kind() != reflect.Invalid {
+		matchAny, _, _, ok := getUniversalType(v.Type())
+		if !(!ok || matchAny) {
+			break
+		}
+		v = v.Elem()
+	}
 	matchAny, tag, isCompound, ok := getUniversalType(v.Type())
 	if !ok || matchAny {
 		return nil, StructuralError{fmt.Sprintf("unknown Go type: %v", v.Type())}

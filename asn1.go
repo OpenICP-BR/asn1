@@ -746,6 +746,12 @@ func parseField(v reflect.Value, bytes []byte, initOffset int, params fieldParam
 		}
 	}
 
+	if fieldType != bigIntType && v.Kind() == reflect.Ptr && v.IsNil() && v.CanSet() {
+		t := v.Type().Elem()
+		v.Set(reflect.New(t))
+		v = v.Elem()
+	}
+	fieldType = v.Type()
 	matchAny, universalTag, compoundType, ok1 := getUniversalType(fieldType)
 	if !ok1 {
 		err = StructuralError{fmt.Sprintf("unknown Go type: %v", fieldType)}
@@ -864,7 +870,8 @@ func parseField(v reflect.Value, bytes []byte, initOffset int, params fieldParam
 		err = err1
 		return
 	}
-	switch val := v; val.Kind() {
+
+	switch val := v; v.Kind() {
 	case reflect.Bool:
 		parsedBool, err1 := parseBool(innerBytes)
 		if err1 == nil {
