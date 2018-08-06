@@ -1048,7 +1048,7 @@ func setDefaultValue(v reflect.Value, params fieldParameters) (ok bool) {
 // If the type of the first field of a structure is RawContent then the raw
 // ASN1 contents of the struct will be stored in it.
 //
-// If the type name of a slice element ends with "SET" then it's treated as if
+// If the type name of a slice element ends with "SET" (case insentive) then it's treated as if
 // the "set" tag was set on it. This can be used with nested slices where a
 // struct tag cannot be given.
 //
