@@ -555,6 +555,18 @@ func makeField(v reflect.Value, params fieldParameters) (e encoder, err error) {
 		}
 	}
 
+	// Check for octet param
+	if params.octet {
+		e, err = makeField(v, fieldParameters{})
+		if err != nil {
+			return nil, err
+		}
+		buf := make([]byte, e.Len())
+		e.Encode(buf)
+		params.octet = false
+		return makeField(reflect.ValueOf(buf), params)
+	}
+
 	// If the field is an interface{} then recurse into it.
 	if v.Kind() == reflect.Interface && v.Type().NumMethod() == 0 {
 		return makeField(v.Elem(), params)

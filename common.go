@@ -82,6 +82,7 @@ type fieldParameters struct {
 	timeType     int    // the time tag to use when marshaling.
 	set          bool   // true iff this should be encoded as a SET
 	omitEmpty    bool   // true iff this should be omitted if empty when marshaling.
+	octet        bool   // true iff the field is marked with `asn1:"octet"`
 
 	// Invariants:
 	//   if explicit is set, tag is non-nil.
@@ -135,6 +136,8 @@ func parseFieldParameters(str string) (ret fieldParameters) {
 			}
 		case part == "omitempty":
 			ret.omitEmpty = true
+		case part == "octet":
+			ret.octet = true
 		}
 	}
 	return

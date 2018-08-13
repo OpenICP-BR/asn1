@@ -299,3 +299,26 @@ func TestBeforable2(t *testing.T) {
 		t.Errorf("d2.Base.A should be equal to 42 instead %d", d2.Base.A)
 	}
 }
+
+type test_octet_struct1 struct {
+	A int
+	B test_octet_struct2 `asn1:"octet"`
+}
+
+type test_octet_struct2 struct {
+	S string
+}
+
+func TestOctect1(t *testing.T) {
+	val := test_octet_struct1{}
+	val.A = 42
+	val.B.S = "life, the univere and everything"
+
+	ans, err := Marshal(val)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if hex.EncodeToString(ans) != "302902012a0424302213206c6966652c2074686520756e697665726520616e642065766572797468696e67" {
+		t.Errorf("worng value. Got: %s", hex.EncodeToString(ans))
+	}
+}
