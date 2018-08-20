@@ -1066,3 +1066,76 @@ func TestTaggedRawValue(t *testing.T) {
 		}
 	}
 }
+
+type structInterface struct {
+	A int
+	B interface{}
+}
+
+type structInterface_str struct {
+	A int
+	B string
+}
+
+type structInterface_substruct struct {
+	A int
+	B structInterface_substruct2
+}
+
+type structInterface_substruct2 struct {
+	C1 int
+	C2 string
+}
+
+func TestUnmarshalInterface1(t *testing.T) {
+	in := structInterface_str{}
+	in.A = 42
+	in.B = "universe"
+
+	der, err := Marshal(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	out := structInterface{}
+	if rest, err := Unmarshal(der, &out); err != nil || len(rest) != 0 {
+		t.Fatal(err)
+	}
+
+	if out.A != in.A {
+		t.Errorf("incorrect A value")
+	}
+	s, ok := out.B.(string)
+	if !ok {
+		t.Errorf("incorrect B type")
+	}
+	if s != in.B {
+		t.Errorf("incorrect B value")
+	}
+}
+
+func TestUnmarshalInterface2(t *testing.T) {
+	in := structInterface_substruct{}
+	in.A = 42
+	in.B.C1 = 5
+	in.B.C2 = "universe"
+
+	der, err := Marshal(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	out := structInterface{}
+	if rest, err := Unmarshal(der, &out); err != nil || len(rest) != 0 {
+		t.Fatal(err)
+	}
+
+	if out.A != in.A {
+		t.Errorf("incorrect A value")
+	}
+
+	_, ok := out.B.(RawValue)
+	if !ok {
+		t.Errorf("incorrect B type")
+	}
+}

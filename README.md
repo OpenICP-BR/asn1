@@ -8,3 +8,4 @@ A fork of the golang's encoding/asn1
   * When marshalling `BeforeASN1Marshalling` will be called on any type that implements `BeforeASN1MarshallingI`.
   * When unmarshalling, a nil pointer to a struct will be dealt with by creating anew struct to put there.
   * Added marshalling option `asn1:"octect"` which will cause the value to be marshalled as an octet string. 
+  * If the correct type of `interface{}` cannot be determined when unmarshalling, `asn1.RawValue` will be used.

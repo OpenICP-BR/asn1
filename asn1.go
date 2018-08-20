@@ -631,6 +631,7 @@ var (
 	rawValueType         = reflect.TypeOf(RawValue{})
 	rawContentsType      = reflect.TypeOf(RawContent(nil))
 	bigIntType           = reflect.TypeOf(new(big.Int))
+	rawInterface         = reflect.TypeOf(new(interface{}))
 )
 
 // invalidLength returns true iff offset + length > sliceLength, or if the
@@ -666,7 +667,8 @@ func parseField(v reflect.Value, bytes []byte, initOffset int, params fieldParam
 			return
 		}
 		var result interface{}
-		if !t.isCompound && t.class == ClassUniversal {
+		//if !t.isCompound && t.class == ClassUniversal {
+		if t.class == ClassUniversal {
 			innerBytes := bytes[offset : offset+t.length]
 			switch t.tag {
 			case TagPrintableString:
@@ -692,7 +694,13 @@ func parseField(v reflect.Value, bytes []byte, initOffset int, params fieldParam
 			case TagOctetString:
 				result = innerBytes
 			default:
-				// If we don't know how to handle the type, we just leave Value as nil.
+				// If we don't know how to handle the type, we just use RawValue
+				raw := RawValue{}
+				raw.Bytes = innerBytes
+				raw.FullBytes = bytes
+				raw.Class = t.class
+				raw.Tag = t.tag
+				result = raw
 			}
 		}
 		offset += t.length
